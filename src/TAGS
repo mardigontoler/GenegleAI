@@ -1,0 +1,22 @@
+
+fitness.h,23
+#define FITNESS_H3,19
+
+queue.h,467
+#define QUEUE_H3,19
+#define QUEUE_IS_FULL 5,38
+#define QUEUE_NOT_FULL 6,65
+#define QUEUE_IS_EMPTY 7,93
+#define QUEUE_NOT_EMPTY 8,121
+#define MAX_QUEUE_SIZE 10,152
+#define HISTOGRAM_SIZE 11,181
+typedef struct Note 13,213
+	unsigned char noteValue;14,236
+	struct Note* next;15,263
+} Note;16,308
+    int count;31,884
+    Note* head;32,900
+    Note* tail;33,917
+    int maxCapacity;34,938
+    unsigned char histogram[histogram36,1028
+} NoteQueue;37,1063
