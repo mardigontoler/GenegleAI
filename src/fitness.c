@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "queue.h"
-
+#include "fitness.h"
 
 /* int main(void) { */
 	

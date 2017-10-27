@@ -1,0 +1,11 @@
+Gregory Hughes
+Mardigon Toler
+CS 472 
+
+AI Project : A Genetic Algorithm for Musical Accompaniment
+
+Depends on the JACK audio connection kit.
+When compiling, link with the JACK library.
+For example:
+gcc *.c -ljack
+
