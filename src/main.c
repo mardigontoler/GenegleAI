@@ -38,12 +38,13 @@ int process(jack_nframes_t nframes, void *arg){
     jack_nframes_t event_index = 0; // for looping over all midi events
 
     jack_midi_event_get(&input_event, port_buffer, 0);
-    printf("nframes: %d\n", nframes);
     for(int i=0; i<nframes; i++)
     {
 	if((input_event.time == i) && (event_index < event_count))
 	{
-	    // mask with 1111111100000000
+	    // mask with 11110000
+	    // A note on message is 10010000
+	    // The next byte will be the note value
 	    if( ((*(input_event.buffer) & 0xf0)) == 0x90 )
 	    {
 		/* note on */

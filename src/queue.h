@@ -11,7 +11,7 @@
 #define HISTOGRAM_SIZE (128)
 
 typedef struct Note {
-	int noteValue;
+	unsigned char noteValue;
 	struct Note* next; // next note in a queue
 } Note;
 
