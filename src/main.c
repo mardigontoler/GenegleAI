@@ -49,10 +49,10 @@ void jack_shutdown(void *arg){
 int process(jack_nframes_t nframes, void *arg){
 
     void* input_port_buffer = jack_port_get_buffer(midi_input_port, nframes);
-	
+
 	void* output_port_buffer = jack_port_get_buffer(midi_output_port, nframes);
 	unsigned char* buffer;
-    
+
     jack_midi_event_t input_event;
     jack_nframes_t event_count = jack_midi_get_event_count(input_port_buffer);
     jack_nframes_t event_index = 0; // for looping over all midi events
@@ -75,7 +75,7 @@ int process(jack_nframes_t nframes, void *arg){
 			if(event_index < event_count)
 				jack_midi_event_get(&input_event, input_port_buffer, event_index);
 		}
-		
+
 		// handle sequenced output
 		for(int j = 0; j < num_notes; j++){
 			if(note_starts[j] == loop_index){
@@ -94,9 +94,9 @@ int process(jack_nframes_t nframes, void *arg){
 			}
 		}
 		loop_index = loop_index+1 >= loop_nsamp ? 0 : loop_index + 1;
-		
+
     }
-	
+
     return 0;
 }
 
@@ -121,7 +121,7 @@ int main(void){
 
 	jack_set_process_callback (client, process, 0);
 	jack_set_sample_rate_callback (client, srate, 0);
-    
+
     if(jack_activate(client) != 0){
 		printf("\nERROR: Can't activate the JACK client.\n");
     }
@@ -138,7 +138,7 @@ int main(void){
     }
     jack_client_close(client);
     exit(0);
-    
+
 }
 
 
@@ -152,7 +152,7 @@ void testHist(void){
     Note* t1 = SetupNote(62);
     Note* t2 = SetupNote(62);
     Note* badNote = SetupNote(63);
-    
+
     NoteQueue* qPtr = malloc(sizeof(NoteQueue));
     NoteQueue* otherqPtr = malloc(sizeof(NoteQueue));
     NoteQueue* badqPtr = malloc(sizeof(NoteQueue));
@@ -166,7 +166,7 @@ void testHist(void){
     InsertNote(badNote, badqPtr);
     InsertNote(t1, otherqPtr);
     InsertNote(t2, otherqPtr);
-    PrintHistogram(otherqPtr);    
+    PrintHistogram(otherqPtr);
     printf("\n%d", fit(qPtr->histogram, otherqPtr->histogram, badqPtr->histogram));
 
     free(n1);
