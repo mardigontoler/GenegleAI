@@ -1,8 +1,8 @@
-##Gregory Hughes
-##Mardigon Toler
-##CS 472
+## Gregory Hughes
+## Mardigon Toler
+## CS 472
 
-#AI Project : A Genetic Algorithm for Musical Accompaniment
+# AI Project : A Genetic Algorithm for Musical Accompaniment
 
 
 Depends on the JACK audio connection kit.
@@ -10,9 +10,32 @@ When compiling, link with the JACK library.
 For example:
 gcc *.c -ljack
 
-##Abstract as presented for WVU Undergraduate Research Day at the Capitol:
+## Abstract as presented for WVU Undergraduate Research Day at the Capitol:
+Generating Concurrent Musical Accompaniment using Artificial Intelligence
 
-###
+
+One of the most impressive feats of musical performance is improvising while
+playing with another musician. We present an Artificial Intelligence (AI) agent that
+emulates this feat by playing music alongside a real musician as if it were also
+another musician.
+ 
+While a simple melody is being played in a predetermined key and time signature,
+the AI agent generates a simple melody in the same key and time signature using a
+genetic algorithm.  The notes from the melody are stored in a custom data structure
+that reaches full capacity after approximately around 12 notes. Once the structure
+is full, several possible accompaniments, called individuals, of the same size are
+randomly generated and then merged based on an evaluation of how well they
+sound when contrasted with the input melody.  Using the genetic algorithm, the
+best-sounding individuals that synchronize with the input melody are more likely
+to be created. The best individual to emerge from multiple rounds of merging and
+the occasional mutation is then played while next notes are being recorded.  The
+result is a computer-generated melody that plays with the accompanying tune in
+harmony.
+ 
+There are existing programs that generate musical accompaniment, but the
+significance of this approach is its ability to generate music in real time during a
+musical performance, making it an interesting tool for use in both practice and
+performance.
 
 
 ## Info
