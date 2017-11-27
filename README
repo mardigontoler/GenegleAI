@@ -29,3 +29,6 @@ aplaymidi --list
 and send a MIDI file to the AI with:
 
 aplaymidi --port <port>
+
+This agent was developed partly in parallel with the project at:
+https://github.com/fifostack/vic
