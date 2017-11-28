@@ -6,6 +6,7 @@
 #include <string.h>
 #include "queue.h"
 #include "fitness.h"
+#include "genetic.h"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -108,6 +109,8 @@ int srate(jack_nframes_t nframes, void *arg)
 }
 
 int main(void){
+	// seed rng
+	srand(time(0));
 	loop_index = 0;
     client = jack_client_open(CLIENT_NAME, JackNullOption, NULL);
     if(client == 0){
@@ -125,6 +128,15 @@ int main(void){
     if(jack_activate(client) != 0){
 		printf("\nERROR: Can't activate the JACK client.\n");
     }
+	
+	// allocate space for the population along with
+	// duplicate space for use in generating new generations
+	NoteQueue* currentPopulation = calloc(POP_SIZE * sizeof(NoteQueue));
+	NoteQueue* workingPopulation = calloc(POP_SIZE * sizeof(NoteQueue));
+	// initialize note queues. the working memory can stay blank
+	for(int i = 0; i < POP_SIZE; i++){
+		initNoteQueue(currentPopulation[i]);
+	}
 
     char command[100];
     int running = 1;
@@ -136,7 +148,20 @@ int main(void){
 			break;
 		}
     }
+	
     jack_client_close(client);
+	
+	while(QueueEmpty(currentPopulation) == NOT_QUEUE_EMPTY){
+		RemoveNote(currentPopulation);
+	}
+	while(QueueEmpty(workingPopulation) == NOT_QUEUE_EMPTY){
+		RemoveNote(workingDirectory);
+	}
+	
+	free(currentPopulation);
+	free(workingPopulation);
+	
+	
     exit(0);
 
 }
@@ -146,6 +171,7 @@ int main(void){
 
 
 void testHist(void){
+	
     Note* n1 = SetupNote(60);
     Note* n2 = SetupNote(62);
     Note* n3 = SetupNote(62);
@@ -156,16 +182,21 @@ void testHist(void){
     NoteQueue* qPtr = malloc(sizeof(NoteQueue));
     NoteQueue* otherqPtr = malloc(sizeof(NoteQueue));
     NoteQueue* badqPtr = malloc(sizeof(NoteQueue));
+	
     initNoteQueue(qPtr);
     initNoteQueue(otherqPtr);
     initNoteQueue(badqPtr);
+	
     InsertNote(n1, qPtr);
     InsertNote(n2, qPtr);
     InsertNote(n3, qPtr);
+	
     PrintHistogram(qPtr);
+	
     InsertNote(badNote, badqPtr);
     InsertNote(t1, otherqPtr);
     InsertNote(t2, otherqPtr);
+	
     PrintHistogram(otherqPtr);
     printf("\n%d", fit(qPtr->histogram, otherqPtr->histogram, badqPtr->histogram));
 
@@ -174,6 +205,7 @@ void testHist(void){
     free(n3);
     free(t1);
     free(t2);
+	
     free(badNote);
     free(qPtr);
     free(otherqPtr);

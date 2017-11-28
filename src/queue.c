@@ -9,6 +9,7 @@ void initNoteQueue(NoteQueue* q) {
     q->head = NULL;
     q->tail = NULL;
     q->maxCapacity = MAX_QUEUE_SIZE;
+	q->fitness = 0;
 	
     // zero the histogram
     for(int i = 0; i < HISTOGRAM_SIZE; i++){
@@ -101,4 +102,16 @@ void PrintHistogram(NoteQueue* q){
 	    printf(" (%d : %d) ", i, q->histogram[i]);
 	}
     }
+}
+
+
+void CopyNoteQueueInto(NoteQueue* source, NoteQueue* dest){
+	dest->count = source->count;
+	dest->head = source-?head;
+	dest->tail = source->tail;
+	dest->maxCapacity = source->maxCapacity;
+	for(int i = 0; i < 128; i++){
+		dest->histogram[i] = source->histogram[i];
+	}
+	dest->fitness = source->fitness;
 }

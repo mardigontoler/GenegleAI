@@ -1,6 +1,7 @@
 
 #ifndef FITNESS_H
 #define FITNESS_H
+
 /**
  * Calculates the fitness of an individual.
  * f is the histogram of the user input

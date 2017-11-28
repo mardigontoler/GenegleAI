@@ -17,6 +17,7 @@ typedef struct Note {
 
 
 /*
+ * NoteQueue
  * FIFO queue for storing MIDI notes.
  * Functions are provided for manipulating the queue.
  * It is up to the client to ensure that the queue is not full upon 
@@ -34,6 +35,7 @@ typedef struct {
     int maxCapacity;
     // The histogram is an array for MIDI notes 0 to 127 inclusive
     int histogram[128];
+	int fitness; // for use in a genetic algorithm
 } NoteQueue;
 
 void initNoteQueue(NoteQueue* q);
@@ -45,6 +47,7 @@ void InsertNote(Note* note, NoteQueue* queue);
 void RemoveNote(NoteQueue* queue);
 void PrintQueue(NoteQueue *q);
 void PrintHistogram(NoteQueue* q);
+void CopyNoteQueueInto(NoteQueue* source, NoteQueue* destination);
  
  #endif
  
