@@ -61,8 +61,11 @@ int process(jack_nframes_t nframes, void *arg){
     jack_midi_event_get(&input_event, input_port_buffer, 0);
     for(int i=0; i<nframes; i++)
     {
+
         if((input_event.time == i) && (event_index < event_count))
         {
+            // MIDI Beat Clock messages are sent 24 times per quater note
+            if(*(input_event.buffer) != 0)printf("%x\n", *(input_event.buffer));
             // mask with 11110000
             // A note on message is 10010000
             // The next byte will be the note value
@@ -72,12 +75,7 @@ int process(jack_nframes_t nframes, void *arg){
                 note = *(input_event.buffer + 1);
                 printf("%d\n", note);
             }
-            event_index++;
-            if(event_index < event_count)
-                jack_midi_event_get(&input_event, input_port_buffer, event_index);
         }
-
-        // handle sequenced output
         for(int j = 0; j < num_notes; j++){
             if(note_starts[j] == loop_index){
                 buffer = jack_midi_event_reserve(output_port_buffer, j, 3);
