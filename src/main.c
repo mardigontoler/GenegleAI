@@ -38,7 +38,11 @@ long currentQuarterNote = 0;
 // Listen for two successive MIDI clock signals, count how many frames in-between them.
 size_t framesPerSmallNote;
 
-unsigned char note = 0; // gets updated in the process callback from MIDI messages
+// Pointers to the population and working population for copying
+NoteQueue* currentPopulation;
+NoteQueue* workingPopulation;
+
+unsigned char note = 0; // gets updated in the process callback from MIDI messages or CLI input
 
 void jack_shutdown(void *arg){
     exit(1);
@@ -49,7 +53,6 @@ void jack_shutdown(void *arg){
 unsigned char GetFitNote(){
     return 64;
 }
-
 
 // callback function for whenever the soundcard is ready for more output
 // This program does not actually output any audio, but this can be good
@@ -113,6 +116,8 @@ int process(jack_nframes_t nframes, void *arg){
             {
                 /* note on */
                 note = *(input_event.buffer + 1);
+                Note* noteObj = SetupNote(note);
+                PushNoteIntoQueue(noteObj, currentPopulation);
                 // printf("%d\n", note);
             }
         }
@@ -152,23 +157,41 @@ int main(void){
 
     // allocate space for the population along with
     // duplicate space for use in generating new generations
-    NoteQueue* currentPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
-    NoteQueue* workingPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
+    currentPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
+    workingPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
     // initialize note queues. the working memory can stay blank
     for(int i = 0; i < POP_SIZE; i++){
         initNoteQueue(currentPopulation + i);
     }
 
-    char command[100];
     int running = 1;
+    char *command = NULL;
+    size_t lineLength = 0;
+    ssize_t nread;
+    int readInt;
     while(running){
-        fgets(command, 99, stdin);
-        printf("%s\n", command);
+        nread = getline(&command, &lineLength, stdin);
+        //printf("%s\n", command);
         if(strncmp(command,"exit",4)== 0){
             running = 0;
             break;
         }
+        // try to interpret each line as a midi note value
+        else if((sscanf(command, "%3d", &readInt)) == 1){
+            //printf("Got the integer: %d\n", readInt);
+            if(readInt >= 0 && readInt <= 127){
+                note = (unsigned char)readInt;
+                Note* noteObj = SetupNote(note);
+                PushNoteIntoQueue(noteObj, currentPopulation);
+                PrintHistogram(currentPopulation);
+            }
+        }
+        else{
+            printf("Error parsing input.\n");
+        }
+
     }
+    free(command); // allocated in getline
 
     jack_client_close(client);
 
@@ -208,15 +231,15 @@ void testHist(void){
     initNoteQueue(otherqPtr);
     initNoteQueue(badqPtr);
 
-    InsertNote(n1, qPtr);
-    InsertNote(n2, qPtr);
-    InsertNote(n3, qPtr);
+    PushNoteIntoQueue(n1, qPtr);
+    PushNoteIntoQueue(n2, qPtr);
+    PushNoteIntoQueue(n3, qPtr);
 
     PrintHistogram(qPtr);
 
-    InsertNote(badNote, badqPtr);
-    InsertNote(t1, otherqPtr);
-    InsertNote(t2, otherqPtr);
+    PushNoteIntoQueue(badNote, badqPtr);
+    PushNoteIntoQueue(t1, otherqPtr);
+    PushNoteIntoQueue(t2, otherqPtr);
 
     PrintHistogram(otherqPtr);
     printf("\n%d", fit(qPtr->histogram, otherqPtr->histogram, badqPtr->histogram));

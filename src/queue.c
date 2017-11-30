@@ -51,7 +51,7 @@ int QueueEmpty(NoteQueue* queue){
 }
 
 
-void InsertNote(Note* note, NoteQueue* queue) {
+void _InsertNote(Note* note, NoteQueue* queue) {
 
     // Assume that the queue is not full.
 
@@ -70,6 +70,16 @@ void InsertNote(Note* note, NoteQueue* queue) {
     // Each bin is indexed by the note value
     queue->histogram[note->noteValue]++;
 }
+
+// adds a note to the queue, first popping one out if the queue is full
+void PushNoteIntoQueue(Note* note, NoteQueue* queue){
+    if(QueueFull(queue) == QUEUE_IS_FULL){
+        RemoveNote(queue);
+    }
+    _InsertNote(note, queue);
+}
+
+
 
 
 void RemoveNote(NoteQueue* queue){
@@ -102,6 +112,7 @@ void PrintHistogram(NoteQueue* q){
             printf(" (%d : %d) ", i, q->histogram[i]);
         }
     }
+    printf("\n");
 }
 
 
