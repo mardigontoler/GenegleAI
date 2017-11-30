@@ -2,6 +2,8 @@
 #include "genetic.h"
 #include <stdlib.h>
 #include "queue.h"
+#include "fitness.h"
+#include <stdio.h>
 
 /* int main(){ */
 
@@ -18,17 +20,18 @@
 
 /* } // main */
 
-/* void simulate(NoteQueue* initPop, int genNum){ */
+void simulate(NoteQueue* initPop, NoteQueue* newPop, NoteQueue* userQueue,
+              NoteQueue* badNoteQueue){
+    for(int x = 0; x < POP_SIZE; x++){
+        initPop[x].fitness = fit(userQueue->histogram,
+                                 initPop[x].histogram, badNoteQueue->histogram);
+    }
+    //qsort(initPop, POP_SIZE, sizeof(NoteQueue), indivcmp);
 
-/* 	qsort(initPop, POP_SIZE, sizeof(NoteQueue), indivcmp); */
-/* 	NoteQueue* newPop = initPop; */
-/* 	for(int x = 0; x < POP_SIZE;x++){ */
-
-/* 		newPop = generation(newPop); */
-
-/* 	} */
-
-/* } */
+    for(int x = 0; x < NUM_OF_GENERATIONS_PER_CALL; x++){
+        generation(initPop, newPop);
+    }
+}
 
 int indivcmp(const void* _one, const void* _two){ // modeled after strcmp
 
@@ -42,7 +45,7 @@ int indivcmp(const void* _one, const void* _two){ // modeled after strcmp
 
 }
 
-NoteQueue* generation(NoteQueue* pop, NoteQueue* newPop){
+void generation(NoteQueue* pop, NoteQueue* newPop){
 
     // The individuals are NoteQueues.
     // Use two pointers for selection
@@ -60,7 +63,7 @@ NoteQueue* generation(NoteQueue* pop, NoteQueue* newPop){
     // We selkect the one that causes this number to fall to 0.
     // This way, highly fit individuals will be very likely to be the one that
     // causes this situation.
-    for(int n = 0; n < POP_SIZE; n+=2){
+        for(int n = 0; n < POP_SIZE; n+=2){
         targetSum = ((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
         for(int i = 0;i < POP_SIZE;i++){
             targetSum -= pop[i].fitness/totalFitness;
@@ -78,47 +81,41 @@ NoteQueue* generation(NoteQueue* pop, NoteQueue* newPop){
             }
 
         }
+
         crossover(x, y);
         mutate(x);
         mutate(y);
 
         CopyNoteQueueInto(x, newPop + n);
-        CopyNoteQueueInto(y, newPop + n + 1);
+        CopyNoteQueueInto(y, newPop + (n + 1));
         //newPop[n] = x;
         //newPop[n + 1] = y;
+
     }
 
-    qsort(newPop, POP_SIZE, sizeof(NoteQueue), indivcmp);
-
-    // Now that the new population has been filled up with copies of the mutated
-    // selected individuals completely, we swap the meanings of the pointers,
-    // the "new" population has become the current population.
-    NoteQueue* tempPtr = pop;
-    pop = newPop;
-    newPop = tempPtr;
-
-    return newPop;
+    qsort(newPop, POP_SIZE, sizeof(NoteQueue*), indivcmp);
 
 }
 
 void crossover(NoteQueue* x, NoteQueue* y){
+    unsigned char index = rand() % NUM_OF_CHROMOSOMES; //pick a random int in the interval [0, NUM_OF)CHROMOSOMES]
 
-    int index = rand() % NUM_OF_CHROMOSOMES; //pick a random int in the interval [0, NUM_OF)CHROMOSOMES]
-    int swapLength = NUM_OF_CHROMOSOMES - index;
-    int temp;
-    for(int i = 0;i < swapLength;i++){
-        temp = x->histogram[index + i];
-        x->histogram[index + i] = y->histogram[index + i];
-        y->histogram[index + i] = temp;
+    unsigned char swapLength = NUM_OF_CHROMOSOMES - index;
+    unsigned char temp;
+    for(unsigned char i = 0;i < swapLength;i++){
+       temp = (x->histogram)[index + i];
+       (x->histogram)[index + i] = (y->histogram)[index + i];
+       (y->histogram)[index + i] = temp;
     }
+
 }
 
 void mutate(NoteQueue* x){
-
     double mutationRate =  ((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
     if(((double)rand())/RAND_MAX < mutationRate){
         // change part of the individual's histogram
         // to a random MIDI note [0, 127]
-        x->histogram[rand() % NUM_OF_CHROMOSOMES] = rand() % 128 ;
+        //printf("addr of x hist : %x\n",x->histogram);
+        x->histogram[rand()%128] = rand()%5;
     }
 }

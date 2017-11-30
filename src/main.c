@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "queue.h"
 #include "fitness.h"
 #include "genetic.h"
@@ -32,6 +33,7 @@ jack_nframes_t loop_index;
 
 int currentNumClockPulses = 0;
 long currentQuarterNote = 0;
+int shouldSimulate = 0;
 
 // For sequencing output, we need to know how many of JACK's callbacks
 // will occur per ouur smallest possible division of rhythm (i.e. 32nd note)
@@ -39,8 +41,11 @@ long currentQuarterNote = 0;
 size_t framesPerSmallNote;
 
 // Pointers to the population and working population for copying
+// as well as a pointer to the queu for user input and "bad" notes
 NoteQueue* currentPopulation;
 NoteQueue* workingPopulation;
+NoteQueue* userInputQueue;
+NoteQueue* badNotesQueue;
 
 unsigned char note = 0; // gets updated in the process callback from MIDI messages or CLI input
 
@@ -51,7 +56,44 @@ void jack_shutdown(void *arg){
 
 // return a note from the current best individual
 unsigned char GetFitNote(){
-    return 64;
+    // the fittest individual in the current population
+    // will have a histogram. we can treat the histogram as a
+    // probability mass function and sample it
+    // We generate a radmon number 0 <= x < 1
+    // and iterate through the histogram, accumulating the current bin's
+    // percentage until it exceeds x
+    double x = ((double)rand())/RAND_MAX;
+    double currentSum = 0;
+    for(unsigned char note = 0; note < 128; note++){
+        currentSum += (double)(currentPopulation->histogram[note])/
+            currentPopulation->count;
+        if(currentSum >= x){
+            printf("%d\n", note);
+            return note;
+        }
+    }
+    printf("default\n");
+    return 64; // base case in case of error
+}
+
+
+// Bad notes should be bad in any octave. This will return the
+// max badness of a note in any octave
+int badnessOctave(unsigned char note, NoteQueue* badNotes){
+    // check to the left
+    int currentMaxBadness = 0;
+    for(unsigned char currentNote = note; note >= 0; note -= 12){
+        if(badNotes->histogram[currentNote] > currentMaxBadness){
+            currentMaxBadness = badNotes->histogram[note];
+        }
+    }
+    // check to the right
+    for(unsigned char currentNote = note; note >= 0; note += 12){
+        if(badNotes->histogram[currentNote] > currentMaxBadness){
+            currentMaxBadness = badNotes->histogram[note];
+        }
+    }
+    return currentMaxBadness;
 }
 
 // callback function for whenever the soundcard is ready for more output
@@ -92,6 +134,7 @@ int process(jack_nframes_t nframes, void *arg){
                 currentNumClockPulses %= 24;
                 if(currentNumClockPulses == 0){
                     currentQuarterNote++;
+                    shouldSimulate = 1;
                     //printf("QN: %ld\n", currentQuarterNote);
                 }
                 if(currentNumClockPulses % 12 == 0){ // eigth note
@@ -151,17 +194,22 @@ int main(void){
     jack_set_process_callback (client, process, 0);
     jack_set_sample_rate_callback (client, srate, 0);
 
-    if(jack_activate(client) != 0){
-        printf("\nERROR: Can't activate the JACK client.\n");
-    }
-
     // allocate space for the population along with
     // duplicate space for use in generating new generations
     currentPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
     workingPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
+    userInputQueue = calloc(1, sizeof(NoteQueue));
+    badNotesQueue = calloc(1, sizeof(NoteQueue));
+
     // initialize note queues. the working memory can stay blank
     for(int i = 0; i < POP_SIZE; i++){
         initNoteQueue(currentPopulation + i);
+    }
+    initNoteQueue(userInputQueue);
+    initNoteQueue(badNotesQueue);
+
+    if(jack_activate(client) != 0){
+        printf("\nERROR: Can't activate the JACK client.\n");
     }
 
     int running = 1;
@@ -176,6 +224,24 @@ int main(void){
             running = 0;
             break;
         }
+        else if(strncmp(command,"start",5) == 0){
+            printf("Now performing genetic algorithm every 4 quarter notes.\n");
+            printf("Terminating command line interactions...\n");
+            while(1){
+                if(shouldSimulate == 1){
+                    shouldSimulate = 0;
+                    simulate(currentPopulation,
+                             workingPopulation, userInputQueue, badNotesQueue);
+                    // Now that the new population has been filled up with copies of the mutated
+                    // selected individuals completely, we swap the meanings of the pointers,
+                    // the "new" population has become the current population.
+                    NoteQueue* tempPtr = currentPopulation;
+                    currentPopulation = workingPopulation;
+                    workingPopulation = tempPtr;
+                }
+                sleep(0.1);
+            }
+        }
         // try to interpret each line as a midi note value
         else if((sscanf(command, "%3d", &readInt)) == 1){
             //printf("Got the integer: %d\n", readInt);
@@ -189,8 +255,8 @@ int main(void){
         else{
             printf("Error parsing input.\n");
         }
-
     }
+
     free(command); // allocated in getline
 
     jack_client_close(client);
@@ -204,6 +270,8 @@ int main(void){
 
     free(currentPopulation);
     free(workingPopulation);
+    free(userInputQueue);
+    free(badNotesQueue);
 
 
     exit(0);

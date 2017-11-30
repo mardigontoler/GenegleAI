@@ -81,7 +81,6 @@ void PushNoteIntoQueue(Note* note, NoteQueue* queue){
 
 
 
-
 void RemoveNote(NoteQueue* queue){
     // Assumes that the queue is not empty
     // notes are removed from the front of the FIFO queue and their memory is freed
