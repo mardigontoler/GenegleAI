@@ -35,10 +35,10 @@ int indivcmp(const void* _one, const void* _two){ // modeled after strcmp
     const NoteQueue* one = (const NoteQueue*)_one;
     const NoteQueue* two = (const NoteQueue*)_two;
     return one->fitness - two->fitness;
-	/*if indivcmp returns a negative number, two has higher fitness
-	* if indivcmp returns a positive number, one has higher fitness
-	* if indivcmp returns 0, one and two are equally fit
-	*/
+    /*if indivcmp returns a negative number, two has higher fitness
+     * if indivcmp returns a positive number, one has higher fitness
+     * if indivcmp returns 0, one and two are equally fit
+     */
 
 }
 
@@ -103,22 +103,22 @@ NoteQueue* generation(NoteQueue* pop, NoteQueue* newPop){
 
 void crossover(NoteQueue* x, NoteQueue* y){
 
-	int index = rand() % NUM_OF_CHROMOSOMES; //pick a random int in the interval [0, NUM_OF)CHROMOSOMES]
-	int swapLength = NUM_OF_CHROMOSOMES - index;
-	int temp;
-	for(int i = 0;i < swapLength;i++){
-		temp = x->histogram[index + i];
-		x->histogram[index + i] = y->histogram[index + i];
-		y->histogram[index + i] = temp;
-	}
+    int index = rand() % NUM_OF_CHROMOSOMES; //pick a random int in the interval [0, NUM_OF)CHROMOSOMES]
+    int swapLength = NUM_OF_CHROMOSOMES - index;
+    int temp;
+    for(int i = 0;i < swapLength;i++){
+        temp = x->histogram[index + i];
+        x->histogram[index + i] = y->histogram[index + i];
+        y->histogram[index + i] = temp;
+    }
 }
 
 void mutate(NoteQueue* x){
 
-	double mutationRate =  ((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
-	if(((double)rand())/RAND_MAX < mutationRate){
-		// change part of the individual's histogram
-		// to a random MIDI note [0, 127]
-		x->histogram[rand() % NUM_OF_CHROMOSOMES] = rand() % 128 ;
-	}
+    double mutationRate =  ((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
+    if(((double)rand())/RAND_MAX < mutationRate){
+        // change part of the individual's histogram
+        // to a random MIDI note [0, 127]
+        x->histogram[rand() % NUM_OF_CHROMOSOMES] = rand() % 128 ;
+    }
 }

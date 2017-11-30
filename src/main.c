@@ -30,6 +30,9 @@ jack_nframes_t num_notes;
 jack_nframes_t loop_nsamp = 44100;
 jack_nframes_t loop_index;
 
+int currentNumClockPulses = 0;
+long currentQuarterNote = 0;
+
 // For sequencing output, we need to know how many of JACK's callbacks
 // will occur per ouur smallest possible division of rhythm (i.e. 32nd note)
 // Listen for two successive MIDI clock signals, count how many frames in-between them.
@@ -42,6 +45,11 @@ void jack_shutdown(void *arg){
 }
 
 
+// return a note from the current best individual
+unsigned char GetFitNote(){
+    return 64;
+}
+
 
 // callback function for whenever the soundcard is ready for more output
 // This program does not actually output any audio, but this can be good
@@ -49,6 +57,8 @@ void jack_shutdown(void *arg){
 // nframes is not how many "chunks," it is how many samples.
 int process(jack_nframes_t nframes, void *arg){
 
+    // monophonic, remembers the current note so it can be turned off in the next callback
+    static unsigned char currentNote = 0;
     void* input_port_buffer = jack_port_get_buffer(midi_input_port, nframes);
 
     void* output_port_buffer = jack_port_get_buffer(midi_output_port, nframes);
@@ -59,13 +69,43 @@ int process(jack_nframes_t nframes, void *arg){
     jack_nframes_t event_index = 0; // for looping over all midi events
 
     jack_midi_event_get(&input_event, input_port_buffer, 0);
+    jack_midi_clear_buffer(output_port_buffer);
     for(int i=0; i<nframes; i++)
     {
 
         if((input_event.time == i) && (event_index < event_count))
         {
-            // MIDI Beat Clock messages are sent 24 times per quater note
-            if(*(input_event.buffer) != 0)printf("%x\n", *(input_event.buffer));
+            // MIDI Beat Clock messages are sent 24 times per quater note.
+            // As a temporary solution to having the genetic algorithm
+            // output MIDI notes, we will play random notes from
+            // an individual with a random probability after, say, every
+            // 8th note (24/2 = 12 clock pulses per eight note)
+            // The NOTEOFF message will not come until this program attempts to
+            // output another NOTEON message
+
+            if(*(input_event.buffer) == 0xf8){
+
+                currentNumClockPulses++;
+                currentNumClockPulses %= 24;
+                if(currentNumClockPulses == 0){
+                    currentQuarterNote++;
+                    //printf("QN: %ld\n", currentQuarterNote);
+                }
+                if(currentNumClockPulses % 12 == 0){ // eigth note
+                    //printf("here\n");
+                    buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
+                    // turn off the last note played here
+                    buffer[2] = 64;
+                    buffer[1] = currentNote;
+                    buffer[0] = 0x80; // NOTE OFF message
+                    // write a note from the current best individual
+                    buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
+                    currentNote = GetFitNote();
+                    buffer[2] = 64; // velocity
+                    buffer[1] = currentNote;
+                    buffer[0] = 0x90;
+                }
+            }
             // mask with 11110000
             // A note on message is 10010000
             // The next byte will be the note value
@@ -73,26 +113,9 @@ int process(jack_nframes_t nframes, void *arg){
             {
                 /* note on */
                 note = *(input_event.buffer + 1);
-                printf("%d\n", note);
+                // printf("%d\n", note);
             }
         }
-        for(int j = 0; j < num_notes; j++){
-            if(note_starts[j] == loop_index){
-                buffer = jack_midi_event_reserve(output_port_buffer, j, 3);
-                // write velocity, note value, and NOTE ON message
-                buffer[2] = 64;
-                buffer[1] = note_freqs[j];
-                buffer[0] = 0x90;
-            }
-            else if(note_starts[j] + note_lengths[j] == loop_index){
-                buffer = jack_midi_event_reserve(output_port_buffer, i, 3);
-                // write velocity, note value, and NOTE OFF message
-                buffer[2] = 64;
-                buffer[1] = note_freqs[j];
-                buffer[0] = 0x80;
-            }
-        }
-        loop_index = loop_index+1 >= loop_nsamp ? 0 : loop_index + 1;
 
     }
 
