@@ -145,7 +145,7 @@ int process(jack_nframes_t nframes, void *arg){
                 /* note on */
                 note = *(input_event.buffer + 1);
                 Note* noteObj = SetupNote(note%12);
-                PushNoteIntoQueue(noteObj, currentPopulation);
+                //PushNoteIntoQueue(noteObj, userInputQueue);
                 // printf("%d\n", note);
             }
         }
