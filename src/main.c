@@ -44,6 +44,8 @@ size_t framesPerSmallNote;
 // as well as a pointer to the queu for user input and "bad" notes
 NoteQueue* currentPopulation;
 NoteQueue* workingPopulation;
+NoteQueue* currentPopulationOriginal;
+NoteQueue* workingPopulationOriginal;
 NoteQueue* userInputQueue;
 NoteQueue* badNotesQueue;
 
@@ -62,39 +64,22 @@ unsigned char GetFitNote(){
     // We generate a radmon number 0 <= x < 1
     // and iterate through the histogram, accumulating the current bin's
     // percentage until it exceeds x
+    PrintHistogram(currentPopulation);
     double x = ((double)rand())/RAND_MAX;
     double currentSum = 0;
-    for(unsigned char note = 0; note < 128; note++){
-        currentSum += (double)(currentPopulation->histogram[note])/
-            currentPopulation->count;
+    for(int note = 0; note < 12; note++){
+        currentSum += ((double)(currentPopulation->histogram[note]))/
+            (currentPopulation->count);
+        //printf("%lf  %lf %d\n", x, currentSum, currentPopulation->count);
         if(currentSum >= x){
-            printf("%d\n", note);
+            //printf("%d\n", note);
             return note;
         }
     }
-    printf("default\n");
-    return 64; // base case in case of error
+    //printf("default\n");
+    return 64%12; // base case in case of error
 }
 
-
-// Bad notes should be bad in any octave. This will return the
-// max badness of a note in any octave
-int badnessOctave(unsigned char note, NoteQueue* badNotes){
-    // check to the left
-    int currentMaxBadness = 0;
-    for(unsigned char currentNote = note; note >= 0; note -= 12){
-        if(badNotes->histogram[currentNote] > currentMaxBadness){
-            currentMaxBadness = badNotes->histogram[note];
-        }
-    }
-    // check to the right
-    for(unsigned char currentNote = note; note >= 0; note += 12){
-        if(badNotes->histogram[currentNote] > currentMaxBadness){
-            currentMaxBadness = badNotes->histogram[note];
-        }
-    }
-    return currentMaxBadness;
-}
 
 // callback function for whenever the soundcard is ready for more output
 // This program does not actually output any audio, but this can be good
@@ -142,13 +127,13 @@ int process(jack_nframes_t nframes, void *arg){
                     buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
                     // turn off the last note played here
                     buffer[2] = 64;
-                    buffer[1] = currentNote;
+                    buffer[1] = currentNote * 5;
                     buffer[0] = 0x80; // NOTE OFF message
                     // write a note from the current best individual
                     buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
                     currentNote = GetFitNote();
                     buffer[2] = 64; // velocity
-                    buffer[1] = currentNote;
+                    buffer[1] = currentNote * 5;
                     buffer[0] = 0x90;
                 }
             }
@@ -159,7 +144,7 @@ int process(jack_nframes_t nframes, void *arg){
             {
                 /* note on */
                 note = *(input_event.buffer + 1);
-                Note* noteObj = SetupNote(note);
+                Note* noteObj = SetupNote(note%12);
                 PushNoteIntoQueue(noteObj, currentPopulation);
                 // printf("%d\n", note);
             }
@@ -198,12 +183,15 @@ int main(void){
     // duplicate space for use in generating new generations
     currentPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
     workingPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
+    currentPopulationOriginal = currentPopulation;
+    workingPopulationOriginal = workingPopulation;
     userInputQueue = calloc(1, sizeof(NoteQueue));
     badNotesQueue = calloc(1, sizeof(NoteQueue));
 
     // initialize note queues. the working memory can stay blank
     for(int i = 0; i < POP_SIZE; i++){
         initNoteQueue(currentPopulation + i);
+        initNoteQueue(workingPopulation + i);
     }
     initNoteQueue(userInputQueue);
     initNoteQueue(badNotesQueue);
@@ -230,14 +218,12 @@ int main(void){
             while(1){
                 if(shouldSimulate == 1){
                     shouldSimulate = 0;
-                    simulate(currentPopulation,
+                    currentPopulation = simulate(currentPopulation,
                              workingPopulation, userInputQueue, badNotesQueue);
-                    // Now that the new population has been filled up with copies of the mutated
-                    // selected individuals completely, we swap the meanings of the pointers,
-                    // the "new" population has become the current population.
-                    NoteQueue* tempPtr = currentPopulation;
-                    currentPopulation = workingPopulation;
-                    workingPopulation = tempPtr;
+                    if(currentPopulation != currentPopulationOriginal){
+                        workingPopulation = currentPopulationOriginal;
+                    }
+
                 }
                 sleep(0.1);
             }
@@ -249,7 +235,7 @@ int main(void){
                 note = (unsigned char)readInt;
                 Note* noteObj = SetupNote(note);
                 PushNoteIntoQueue(noteObj, currentPopulation);
-                PrintHistogram(currentPopulation);
+                //PrintHistogram(currentPopulation);
             }
         }
         else{

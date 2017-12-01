@@ -5,7 +5,7 @@
 
 
 void initNoteQueue(NoteQueue* q) {
-    q->count = 0;
+    q->count = 1;
     q->head = NULL;
     q->tail = NULL;
     q->maxCapacity = MAX_QUEUE_SIZE;
@@ -15,6 +15,7 @@ void initNoteQueue(NoteQueue* q) {
     for(int i = 0; i < HISTOGRAM_SIZE; i++){
         q->histogram[i] = 0;
     }
+    q->histogram[60%12] = 1;
 }
 
 
@@ -120,7 +121,7 @@ void CopyNoteQueueInto(NoteQueue* source, NoteQueue* dest){
     dest->head = source->head;
     dest->tail = source->tail;
     dest->maxCapacity = source->maxCapacity;
-    for(int i = 0; i < 128; i++){
+    for(int i = 0; i < 12; i++){
         dest->histogram[i] = source->histogram[i];
     }
     dest->fitness = source->fitness;

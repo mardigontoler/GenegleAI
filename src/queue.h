@@ -8,7 +8,7 @@
 #define QUEUE_NOT_EMPTY (0)
 
 #define MAX_QUEUE_SIZE (12)
-#define HISTOGRAM_SIZE (128)
+#define HISTOGRAM_SIZE (12)
 
 typedef struct Note {
 	unsigned char noteValue;
@@ -34,7 +34,7 @@ typedef struct {
     Note* tail;
     int maxCapacity;
     // The histogram is an array for MIDI notes 0 to 127 inclusive
-    int histogram[128];
+    int histogram[12];
 	int fitness; // for use in a genetic algorithm
 } NoteQueue;
 

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "queue.h"
-#include "fitness.h"      
+#include "fitness.h"
 
 int fit(int* f, int* g, int* z) {
 	int size = HISTOGRAM_SIZE;
@@ -11,5 +11,5 @@ int fit(int* f, int* g, int* z) {
 		z_x_g += z[c] * g[c];
 
 	}
-	return (f_x_g - z_x_g);
+	return (f_x_g);// - z_x_g);
 }
