@@ -14,6 +14,18 @@
 
 #define CLIENT_NAME "Genegle"
 
+/**
+
+   GenegleBot - CS471 AI Semester Project
+   Gregory Hughes
+   Mardigon Toler
+
+   This file registers a client on the JACK server and handles
+   memory allocation for the inidividuals that will participate
+   in the genetic algorithm.
+**/
+
+
 // create MIDI ports as global variables
 jack_port_t *midi_input_port;
 jack_port_t *midi_output_port;
@@ -76,7 +88,7 @@ unsigned char GetFitNote(){
             return note;
         }
     }
-    //printf("default\n");
+
     return 64%12; // base case in case of error
 }
 
@@ -85,6 +97,8 @@ unsigned char GetFitNote(){
 // This program does not actually output any audio, but this can be good
 // in conjunction with knowing the sampling rate to do accurate timing
 // nframes is not how many "chunks," it is how many samples.
+// Our AI uses this callback function to update the user input
+// as well as to determine when to simulate more generations.
 int process(jack_nframes_t nframes, void *arg){
 
     // monophonic, remembers the current note so it can be turned off in the next callback
@@ -120,20 +134,19 @@ int process(jack_nframes_t nframes, void *arg){
                 if(currentNumClockPulses == 0){
                     currentQuarterNote++;
                     shouldSimulate = 1;
-                    //printf("QN: %ld\n", currentQuarterNote);
                 }
                 if(currentNumClockPulses % 12 == 0){ // eigth note
-                    //printf("here\n");
+
                     buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
                     // turn off the last note played here
                     buffer[2] = 64;
-                    buffer[1] = currentNote * 5;
+                    buffer[1] = currentNote + 60;
                     buffer[0] = 0x80; // NOTE OFF message
                     // write a note from the current best individual
                     buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
                     currentNote = GetFitNote();
                     buffer[2] = 64; // velocity
-                    buffer[1] = currentNote * 5;
+                    buffer[1] = currentNote + 60;
                     buffer[0] = 0x90;
                 }
             }
@@ -145,11 +158,10 @@ int process(jack_nframes_t nframes, void *arg){
                 /* note on */
                 note = *(input_event.buffer + 1);
                 Note* noteObj = SetupNote(note%12);
-                //PushNoteIntoQueue(noteObj, userInputQueue);
+                PushNoteIntoQueue(noteObj, userInputQueue);
                 // printf("%d\n", note);
             }
         }
-
     }
 
     return 0;
@@ -258,7 +270,6 @@ int main(void){
     free(workingPopulation);
     free(userInputQueue);
     free(badNotesQueue);
-
 
     exit(0);
 
