@@ -39,7 +39,8 @@ performance.
 
 
 ## Info
-This AI agent is designed to be used with the JACK Audio Connection Kit.
+This AI agent is designed to be used with the JACK Audio Connection Kit:
+https://http://jackaudio.org/
 To perform, it requires a MIDI clock input as well as MIDI note messages.
 As the genetic algorithm searches for "good" accompaniments, it outputs
 the current best accompaniments as MIDI note messages, routable with JACK.
@@ -53,3 +54,19 @@ into its input.
 
 This agent was developed partly in parallel with the project at:
 https://github.com/fifostack/vic
+
+Some requirements for operation are a source of MIDI input, a destination for MIDI output,
+and a source for MIDI clock. The Genegle AI agent has been tested with a hardware keyboard
+for input, a hardware synthesizer for output, and Ardour (https://ardour.org/)
+as a source of MIDI clock input.
+It has also been tested with the Virtual Midi Piano Keyboard (http://vmpk.sourceforge.net/)
+for input and Qsynth (https://qsynth.sourceforge.io/) for output.
+
+## Instructions
+After compiling and running the executable, it will appear in the JACK server as "Genegle."
+You must first use software like qjackctrl to connect your source of MIDI input to Genegle's
+input port. Then, connect a source of MIDI Clock to Genegle's Input. Next, connect Genegle's
+MIDI output to a synthesizer or some other MIDI input port.
+
+To begin the genetic algorithm, enter the word "start" to Genegle. At the moment, after the genetic 
+algorithm starts, it can only be stopped by killing or interrupting the process.
