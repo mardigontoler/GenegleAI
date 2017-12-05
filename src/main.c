@@ -158,6 +158,9 @@ int process(jack_nframes_t nframes, void *arg){
                 /* note on */
                 note = *(input_event.buffer + 1);
                 Note* noteObj = SetupNote(note%12);
+                if(noteObj == NULL){
+                    printf("ERROR: Could not set up note object.\n");
+                }
                 PushNoteIntoQueue(noteObj, userInputQueue);
                 // printf("%d\n", note);
             }
@@ -204,9 +207,12 @@ int main(void){
     for(int i = 0; i < POP_SIZE; i++){
         initNoteQueue(currentPopulation + i);
         initNoteQueue(workingPopulation + i);
+        currentPopulation[i].histogram[0] = 1;
     }
     initNoteQueue(userInputQueue);
     initNoteQueue(badNotesQueue);
+
+
 
     if(jack_activate(client) != 0){
         printf("\nERROR: Can't activate the JACK client.\n");

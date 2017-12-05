@@ -54,6 +54,11 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
         totalFitness += pop[c].fitness;
     }
 
+    if(totalFitness == 0){
+        printf("here\n");
+        return;
+    }
+
     // To select an individual, we generate a number and iterate through sorted individuals,
     // constantly subtracting from our number the individual's normalized fitness.
     // We selkect the one that causes this number to fall to 0.
@@ -76,9 +81,6 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
             targetSum -= ((double)pop[j].fitness)/totalFitness;
             if(targetSum <= 0){
                 y = &pop[j];
-
-
-
                 break;
             }
         }
@@ -99,7 +101,7 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
 
     }
 
-    qsort(newPop, POP_SIZE, sizeof(NoteQueue*), indivcmp);
+    qsort(newPop, POP_SIZE, sizeof(NoteQueue), indivcmp);
     //PrintHistogram(newPop);
     //getc(stdin);
 
@@ -109,9 +111,9 @@ void crossover(NoteQueue* x, NoteQueue* y){
 
     //printf("Crossover\n");
 
-    unsigned char index = rand() % NUM_OF_CHROMOSOMES; //pick a random int in the interval [0, NUM_OF)CHROMOSOMES]
+    int index = rand() % 12;
 
-    unsigned char swapLength = NUM_OF_CHROMOSOMES - index;
+    int swapLength = 12 - index;
     unsigned char temp;
     for(unsigned char i = 0;i < swapLength;i++){
        temp = (x->histogram)[index + i];
@@ -136,11 +138,22 @@ void mutate(NoteQueue* x){
         // change part of the individual's histogram
         // to a random MIDI note [0, 127]
         //printf("addr of x hist : %x\n",x->histogram);
-        x->histogram[rand()%12] = rand()%5;
+        int newHistValue = (int)(rand()%5);
+        int histIndex = (int)(rand()%12);
+
+        x->histogram[histIndex] = newHistValue;
     }
     x->count = 0;
     for(int i = 0; i < HISTOGRAM_SIZE; i++){
         x->count += x->histogram[i];
+    }
+    while(x->count > MAX_QUEUE_SIZE){
+        // start removing from bins until count goes back to normal
+        int histIndex = (int)(rand()%12);
+        if(x->histogram[histIndex] > 0){
+            x->histogram[histIndex]--;
+            x->count--;
+        }
     }
     //PrintHistogram(x);
 }

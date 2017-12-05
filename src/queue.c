@@ -5,7 +5,7 @@
 
 
 void initNoteQueue(NoteQueue* q) {
-    q->count = 1;
+    q->count = 0;
     q->head = NULL;
     q->tail = NULL;
     q->maxCapacity = MAX_QUEUE_SIZE;
@@ -15,7 +15,7 @@ void initNoteQueue(NoteQueue* q) {
     for(int i = 0; i < HISTOGRAM_SIZE; i++){
         q->histogram[i] = 0;
     }
-    q->histogram[60%12] = 1;
+
 }
 
 
