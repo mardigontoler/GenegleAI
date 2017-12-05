@@ -85,7 +85,6 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
             }
         }
 
-
         crossover(x, y);
         mutate(x);
         mutate(y);

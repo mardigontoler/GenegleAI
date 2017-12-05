@@ -23,6 +23,17 @@
    This file registers a client on the JACK server and handles
    memory allocation for the inidividuals that will participate
    in the genetic algorithm.
+
+   As of the time of the in-class presentation,
+   the genetic algorithm goes through 3 generations
+   every half-beat after the user enters "start" at the
+   command line. Then, the current best individual is used to
+   generate and output a note.
+
+   The queue implementation is found in queue.c
+   The genetic algorithm is contained in genetic.c
+   Our fitness function is in fitness.c
+
 **/
 
 
@@ -213,7 +224,6 @@ int main(void){
     initNoteQueue(badNotesQueue);
 
 
-
     if(jack_activate(client) != 0){
         printf("\nERROR: Can't activate the JACK client.\n");
     }
@@ -246,7 +256,8 @@ int main(void){
                 sleep(0.1);
             }
         }
-        // try to interpret each line as a midi note value
+        // Accept input from stdin to make it easier to test
+        // Try to interpret each line as a midi note value
         else if((sscanf(command, "%3d", &readInt)) == 1){
             //printf("Got the integer: %d\n", readInt);
             if(readInt >= 0 && readInt <= 127){
@@ -263,6 +274,8 @@ int main(void){
 
     free(command); // allocated in getline
 
+
+    // Close connectoins to the JACK servre and free up memory
     jack_client_close(client);
 
     while(QueueEmpty(currentPopulation) == QUEUE_NOT_EMPTY){
@@ -279,50 +292,4 @@ int main(void){
 
     exit(0);
 
-}
-
-
-
-
-
-void testHist(void){
-
-    Note* n1 = SetupNote(60);
-    Note* n2 = SetupNote(62);
-    Note* n3 = SetupNote(62);
-    Note* t1 = SetupNote(62);
-    Note* t2 = SetupNote(62);
-    Note* badNote = SetupNote(63);
-
-    NoteQueue* qPtr = malloc(sizeof(NoteQueue));
-    NoteQueue* otherqPtr = malloc(sizeof(NoteQueue));
-    NoteQueue* badqPtr = malloc(sizeof(NoteQueue));
-
-    initNoteQueue(qPtr);
-    initNoteQueue(otherqPtr);
-    initNoteQueue(badqPtr);
-
-    PushNoteIntoQueue(n1, qPtr);
-    PushNoteIntoQueue(n2, qPtr);
-    PushNoteIntoQueue(n3, qPtr);
-
-    PrintHistogram(qPtr);
-
-    PushNoteIntoQueue(badNote, badqPtr);
-    PushNoteIntoQueue(t1, otherqPtr);
-    PushNoteIntoQueue(t2, otherqPtr);
-
-    PrintHistogram(otherqPtr);
-    printf("\n%d", fit(qPtr->histogram, otherqPtr->histogram, badqPtr->histogram));
-
-    free(n1);
-    free(n2);
-    free(n3);
-    free(t1);
-    free(t2);
-
-    free(badNote);
-    free(qPtr);
-    free(otherqPtr);
-    free(badqPtr);
 }
