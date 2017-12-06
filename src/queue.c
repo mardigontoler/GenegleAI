@@ -137,6 +137,8 @@ unsigned char GetFitNote(NoteQueue* currentPopulation){
     // and iterate through the histogram, accumulating the current bin's
     // percentage until it exceeds x
     //PrintHistogram(currentPopulation);
+    printf("selected fitness: %d\n", currentPopulation->fitness);
+    PrintHistogram(currentPopulation);
     double x = ((double)rand())/RAND_MAX;
     double currentSum = 0;
     for(int note = 0; note < 12; note++){

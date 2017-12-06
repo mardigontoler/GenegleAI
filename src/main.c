@@ -121,7 +121,8 @@ int process(jack_nframes_t nframes, void *arg){
                     currentQuarterNote++;
                     shouldSimulate = 1;
                 }
-                if(currentNumClockPulses % 12 == 0){ // eigth note
+                if(currentNumClockPulses % 12 == 0 && ((double)rand())/RAND_MAX < 0.5){
+                    // random eigth notes
 
                     buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
                     // turn off the last note played here

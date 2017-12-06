@@ -64,7 +64,7 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
     }
 
     if(totalFitness == 0){
-        printf("here\n");
+
         return;
     }
 
@@ -90,11 +90,12 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
             targetSum -= ((double)pop[j].fitness)/totalFitness;
             if(targetSum <= 0){
                 y = &pop[j];
+
                 break;
             }
         }
-
-        crossover(x, y);
+        //printf("i is %d, j is %d\n",i,j);
+        //crossover(x, y);
         mutate(x);
         mutate(y);
 
@@ -141,7 +142,7 @@ void crossover(NoteQueue* x, NoteQueue* y){
 
 void mutate(NoteQueue* x){
     //printf("mutaing\n");
-    double mutationRate =  ((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
+    double mutationRate =  0.1;//((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
     if(((double)rand())/RAND_MAX < mutationRate){
         // change part of the individual's histogram
         // to a random MIDI note [0, 127]
@@ -155,7 +156,11 @@ void mutate(NoteQueue* x){
     for(int i = 0; i < HISTOGRAM_SIZE; i++){
         x->count += x->histogram[i];
     }
-    while(x->count > MAX_QUEUE_SIZE){
+    // for right now, it sounds better if we limit the size of the histograms
+    // so that they will be more likely to be more dense around
+    // more played notes. INDIV_TARGET_HIST_SIZE is temporarily used here
+    // until I think of a better way, and it should be small (like 1 to 5 or something)
+    while(x->count > INDIV_TARGET_HIST_SIZE){
         // start removing from bins until count goes back to normal
         int histIndex = (int)(rand()%12);
         if(x->histogram[histIndex] > 0){
