@@ -52,7 +52,6 @@ jack_nframes_t *note_lengths;
 // other global information for sequencing the AI's output
 jack_nframes_t num_notes;
 jack_nframes_t loop_nsamp = 44100;
-jack_nframes_t loop_index;
 
 int currentNumClockPulses = 0;
 long currentQuarterNote = 0;
@@ -78,30 +77,6 @@ void jack_shutdown(void *arg){
     exit(1);
 }
 
-
-// return a note from the current best individual
-unsigned char GetFitNote(){
-    // the fittest individual in the current population
-    // will have a histogram. we can treat the histogram as a
-    // probability mass function and sample it
-    // We generate a radmon number 0 <= x < 1
-    // and iterate through the histogram, accumulating the current bin's
-    // percentage until it exceeds x
-    //PrintHistogram(currentPopulation);
-    double x = ((double)rand())/RAND_MAX;
-    double currentSum = 0;
-    for(int note = 0; note < 12; note++){
-        currentSum += ((double)(currentPopulation->histogram[note]))/
-            (currentPopulation->count);
-        //printf("%lf  %lf %d\n", x, currentSum, currentPopulation->count);
-        if(currentSum >= x){
-            //printf("%d\n", note);
-            return note;
-        }
-    }
-
-    return 64%12; // base case in case of error
-}
 
 
 // callback function for whenever the soundcard is ready for more output
@@ -155,7 +130,7 @@ int process(jack_nframes_t nframes, void *arg){
                     buffer[0] = 0x80; // NOTE OFF message
                     // write a note from the current best individual
                     buffer = jack_midi_event_reserve(output_port_buffer, 0, 3);
-                    currentNote = GetFitNote();
+                    currentNote = GetFitNote(currentPopulation);
                     buffer[2] = 64; // velocity
                     buffer[1] = currentNote + 60;
                     buffer[0] = 0x90;
@@ -191,7 +166,7 @@ int srate(jack_nframes_t nframes, void *arg)
 int main(void){
     // seed rng
     srand(time(0));
-    loop_index = 0;
+
     client = jack_client_open(CLIENT_NAME, JackNullOption, NULL);
     if(client == 0){
         printf("\nCould not start as a JACK client. Make sure the jack server is running.\n");

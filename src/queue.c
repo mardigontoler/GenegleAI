@@ -126,3 +126,28 @@ void CopyNoteQueueInto(NoteQueue* source, NoteQueue* dest){
     }
     dest->fitness = source->fitness;
 }
+
+
+// return a note from the current best individual
+unsigned char GetFitNote(NoteQueue* currentPopulation){
+    // the fittest individual in the current population
+    // will have a histogram. we can treat the histogram as a
+    // probability mass function and sample it
+    // We generate a radmon number 0 <= x < 1
+    // and iterate through the histogram, accumulating the current bin's
+    // percentage until it exceeds x
+    //PrintHistogram(currentPopulation);
+    double x = ((double)rand())/RAND_MAX;
+    double currentSum = 0;
+    for(int note = 0; note < 12; note++){
+        currentSum += ((double)(currentPopulation->histogram[note]))/
+            (currentPopulation->count);
+        //printf("%lf  %lf %d\n", x, currentSum, currentPopulation->count);
+        if(currentSum >= x){
+            //printf("%d\n", note);
+            return note;
+        }
+    }
+
+    return 64%12; // base case in case of error
+}

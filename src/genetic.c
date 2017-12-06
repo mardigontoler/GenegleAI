@@ -26,15 +26,24 @@ NoteQueue* simulate(NoteQueue* initPop, NoteQueue* newPop, NoteQueue* userQueue,
     return newPop;
 }
 
-int indivcmp(const void* _one, const void* _two){ // modeled after strcmp
+
+// comparison function for sorting
+// The best individuals should be at the beginning,
+// so we should sort by decreasing fitness
+int indivcmp(const void* _one, const void* _two){
 
     const NoteQueue* one = (const NoteQueue*)_one;
     const NoteQueue* two = (const NoteQueue*)_two;
-    return one->fitness - two->fitness;
-    /*if indivcmp returns a negative number, two has higher fitness
-     * if indivcmp returns a positive number, one has higher fitness
-     * if indivcmp returns 0, one and two are equally fit
-     */
+    if(one->fitness > two->fitness){
+		return -1;
+	}
+	else if(one->fitness < two->fitness){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+
 
 }
 

@@ -49,5 +49,6 @@ void RemoveNote(NoteQueue* queue);
 void PrintQueue(NoteQueue *q);
 void PrintHistogram(NoteQueue* q);
 void CopyNoteQueueInto(NoteQueue* source, NoteQueue* destination);
+unsigned char GetFitNote(NoteQueue* population);
 
  #endif
