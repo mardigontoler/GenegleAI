@@ -15,6 +15,7 @@ NoteQueue* simulate(NoteQueue* initPop, NoteQueue* newPop, NoteQueue* userQueue,
 
             initPop[y].fitness = fit(userQueue->histogram,
                                      initPop[y].histogram, badNoteQueue->histogram);
+            //printf("fitness of indv %d is %d\n", y, initPop[y].fitness);
         }
         generation(initPop, newPop);
         // selected individuals completely, we swap the meanings of the pointers,
@@ -22,6 +23,7 @@ NoteQueue* simulate(NoteQueue* initPop, NoteQueue* newPop, NoteQueue* userQueue,
         NoteQueue* tempPtr = initPop;
         initPop = newPop;
         newPop = tempPtr;
+
     }
     return newPop;
 }
@@ -49,6 +51,8 @@ int indivcmp(const void* _one, const void* _two){
 
 void generation(NoteQueue* pop, NoteQueue* newPop){
 
+    //printf("generation\n");
+
     // The individuals are NoteQueues.
     // Use two pointers for selection
     NoteQueue* x;
@@ -64,7 +68,7 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
     }
 
     if(totalFitness == 0){
-
+        printf("\nfitness is  0\n");
         return;
     }
 
@@ -141,7 +145,7 @@ void crossover(NoteQueue* x, NoteQueue* y){
 }
 
 void mutate(NoteQueue* x){
-    //printf("mutaing\n");
+    printf("mutaing\n");
     double mutationRate =  0.1;//((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
     if(((double)rand())/RAND_MAX < mutationRate){
         // change part of the individual's histogram

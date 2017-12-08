@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include "queue.h"
 #include "fitness.h"
 #include "genetic.h"
-
 
 NoteQueue* currentPopulation;
 NoteQueue* workingPopulation;
@@ -17,12 +17,10 @@ NoteQueue* userInputQueue;
 NoteQueue* badNotesQueue;
 
 
-
-
 int main(void){
-	
-	srand(time(0));
-	
+
+    srand(time(0));
+
     // allocate space for the population along with
     // duplicate space for use in generating new generations
     currentPopulation = calloc(POP_SIZE, sizeof(NoteQueue));
@@ -40,19 +38,24 @@ int main(void){
     }
     initNoteQueue(userInputQueue);
     initNoteQueue(badNotesQueue);
-	
-	
+
+
     int running = 1;
     char *command = NULL;
     size_t lineLength = 0;
     ssize_t nread;
     int readInt;
+    int numNotesRead = 0;
 	while(running){
 		nread = getline(&command, &lineLength, stdin);
 		if(strncmp(command,"exit",4)== 0){
             running = 0;
             break;
-        }
+    }
+    if(strncmp(command, "start",5) == 0){
+        running = 0;
+        PrintHistogram(currentPopulation);
+    }
 		else if(command[0] == '\n'){
 			printf("Testing GA with this inout histogram:\n");
 			PrintHistogram(userInputQueue);
@@ -62,17 +65,22 @@ int main(void){
 		else if((sscanf(command, "%3d", &readInt)) == 1){
             //printf("Got the integer: %d\n", readInt);
             if(readInt >= 0 && readInt <= 127){
-                note = (unsigned char)readInt;
+                unsigned char note = (unsigned char)readInt;
+                printf("%d\n",note);
                 Note* noteObj = SetupNote(note);
-                PushNoteIntoQueue(noteObj, currentPopulation);
-                //PrintHistogram(currentPopulation);
+                PushNoteIntoQueue(noteObj, userInputQueue);
+                //PrintHistogram(userInputQueue);
+                printf("simulating\n");
+                for(int i = 0; i < 8; i ++){
+                    simulate(currentPopulation,workingPopulation,userInputQueue,badNotesQueue);
+                }
             }
         }
         else{
             printf("Error parsing input.\n");
         }
 	}
-	
+
 	free(command);
 	while(QueueEmpty(currentPopulation) == QUEUE_NOT_EMPTY){
         RemoveNote(currentPopulation);
@@ -84,7 +92,6 @@ int main(void){
     free(workingPopulation);
     free(userInputQueue);
     free(badNotesQueue);
-	
-	
+
 	return 0;
 }
