@@ -3,3 +3,6 @@
 a.out
 genegle
 statistics
+*.exe
+output.txt
+

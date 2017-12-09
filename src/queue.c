@@ -18,13 +18,10 @@ void initNoteQueue(NoteQueue* q) {
 
 }
 
-
-
 Note* _AllocateNote() {
     Note* alloc_queue = malloc(sizeof(Note));
     return alloc_queue;
 }
-
 
 
 Note* SetupNote(unsigned char noteValue) {
@@ -45,7 +42,7 @@ int QueueFull(NoteQueue* queue){
 }
 
 int QueueEmpty(NoteQueue* queue){
-    if(queue->count == 0){
+    if(queue->count <= 1){
         return QUEUE_IS_EMPTY;
     }
     else return QUEUE_NOT_EMPTY;
@@ -106,13 +103,13 @@ void PrintQueue(NoteQueue *q){
 
 
 void PrintHistogram(NoteQueue* q){
-    printf("\n");
+    //printf("\n");
     for(int i = 0; i < HISTOGRAM_SIZE; i++){
         if(q->histogram[i] != 0){
             printf(" (%d : %d) ", i, q->histogram[i]);
         }
     }
-    printf("\n");
+    //printf("\n");
 }
 
 

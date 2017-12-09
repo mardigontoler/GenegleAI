@@ -68,7 +68,6 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
     }
 
     if(totalFitness == 0){
-        printf("\nfitness is  0\n");
         return;
     }
 
@@ -84,8 +83,6 @@ void generation(NoteQueue* pop, NoteQueue* newPop){
 
             if(targetSum <= 0){
                 x = &pop[i];
-
-
                 break;
             }
         }
@@ -145,7 +142,7 @@ void crossover(NoteQueue* x, NoteQueue* y){
 }
 
 void mutate(NoteQueue* x){
-    printf("mutaing\n");
+    
     double mutationRate =  0.1;//((double)rand())/RAND_MAX; //generate a random double in the interval [0, 1)
     if(((double)rand())/RAND_MAX < mutationRate){
         // change part of the individual's histogram

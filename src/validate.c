@@ -16,6 +16,7 @@ NoteQueue* workingPopulationOriginal;
 NoteQueue* userInputQueue;
 NoteQueue* badNotesQueue;
 
+#define NUM_TRIALS (30)
 
 int main(void){
 
@@ -46,34 +47,46 @@ int main(void){
     ssize_t nread;
     int readInt;
     int numNotesRead = 0;
+	Note* noteObj = SetupNote(0); // required right now because of bug
+	PushNoteIntoQueue(noteObj, userInputQueue);
 	while(running){
 		nread = getline(&command, &lineLength, stdin);
 		if(strncmp(command,"exit",4)== 0){
             running = 0;
             break;
-    }
-    if(strncmp(command, "start",5) == 0){
-        running = 0;
-        PrintHistogram(currentPopulation);
-    }
-		else if(command[0] == '\n'){
-			printf("Testing GA with this inout histogram:\n");
-			PrintHistogram(userInputQueue);
-			printf("\nHistogram of best individual with fitness = %d", currentPopulation[0].fitness);
-			PrintHistogram(currentPopulation);
 		}
+		if(strncmp(command, "start",5) == 0){
+			printf("Statistics for user input queue: ");
+			PrintHistogram(userInputQueue);
+			printf("\n\nTrial,OutputHist,BestFitness\n");
+			printf("\n");
+			for(int j = 0; j < NUM_TRIALS; j++){
+				for(int i = 0; i < 8; i ++){
+                    simulate(currentPopulation,workingPopulation,userInputQueue,badNotesQueue);
+                }
+				printf("%d,",j);
+				PrintHistogram(currentPopulation);
+				printf(", %d\n", currentPopulation[0].fitness);
+			}
+			
+			running = 0;
+
+		}
+		else if(command[0] == '\n'){
+			printf("Blank line. Exiting...\n");
+			exit(0);
+		}
+		
+		
 		else if((sscanf(command, "%3d", &readInt)) == 1){
             //printf("Got the integer: %d\n", readInt);
             if(readInt >= 0 && readInt <= 127){
                 unsigned char note = (unsigned char)readInt;
-                printf("%d\n",note);
-                Note* noteObj = SetupNote(note);
+                //printf("%d\n",note);
+                noteObj = SetupNote(note);
                 PushNoteIntoQueue(noteObj, userInputQueue);
                 //PrintHistogram(userInputQueue);
-                printf("simulating\n");
-                for(int i = 0; i < 8; i ++){
-                    simulate(currentPopulation,workingPopulation,userInputQueue,badNotesQueue);
-                }
+                //printf("simulating\n");
             }
         }
         else{
@@ -82,12 +95,17 @@ int main(void){
 	}
 
 	free(command);
-	while(QueueEmpty(currentPopulation) == QUEUE_NOT_EMPTY){
-        RemoveNote(currentPopulation);
-    }
-    while(QueueEmpty(workingPopulation) == QUEUE_NOT_EMPTY){
-        RemoveNote(workingPopulation);
-    }
+	
+	/* 	
+	BUG HERE!!! refactor the individuals to use some new struct just for the histogram
+	since that is all we're ever modifying
+	*/	
+	// while(QueueEmpty(currentPopulation) == QUEUE_NOT_EMPTY){
+        // RemoveNote(currentPopulation);
+    // }
+    // while(QueueEmpty(workingPopulation) == QUEUE_NOT_EMPTY){
+        // RemoveNote(workingPopulation);
+    // }
     free(currentPopulation);
     free(workingPopulation);
     free(userInputQueue);
