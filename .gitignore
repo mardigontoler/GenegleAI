@@ -5,4 +5,8 @@ genegle
 statistics
 *.exe
 output.txt
+*.log
+*.aux
+*.gz
+
 
