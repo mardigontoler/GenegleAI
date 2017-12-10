@@ -51,7 +51,7 @@ int main(void){
 	PushNoteIntoQueue(noteObj, userInputQueue);
 	while(running){
 		nread = getline(&command, &lineLength, stdin);
-		if(strncmp(command,"exit",4)== 0){
+		if(strncmp(command,"exit", 4)== 0){
             running = 0;
             break;
 		}
@@ -85,7 +85,9 @@ int main(void){
                 //printf("%d\n",note);
                 noteObj = SetupNote(note);
                 PushNoteIntoQueue(noteObj, userInputQueue);
+				simulate(currentPopulation,workingPopulation,userInputQueue,badNotesQueue);
                 //PrintHistogram(userInputQueue);
+				//printf("\n");
                 //printf("simulating\n");
             }
         }

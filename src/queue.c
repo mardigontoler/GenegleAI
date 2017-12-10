@@ -42,7 +42,7 @@ int QueueFull(NoteQueue* queue){
 }
 
 int QueueEmpty(NoteQueue* queue){
-    if(queue->count <= 1){
+    if(queue->count <= 0){
         return QUEUE_IS_EMPTY;
     }
     else return QUEUE_NOT_EMPTY;
