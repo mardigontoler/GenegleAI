@@ -79,16 +79,14 @@ int main(void){
 		
 		
 		else if((sscanf(command, "%3d", &readInt)) == 1){
-            //printf("Got the integer: %d\n", readInt);
+
             if(readInt >= 0 && readInt <= 127){
                 unsigned char note = (unsigned char)readInt;
-                //printf("%d\n",note);
+
                 noteObj = SetupNote(note);
                 PushNoteIntoQueue(noteObj, userInputQueue);
 				simulate(currentPopulation,workingPopulation,userInputQueue,badNotesQueue);
-                //PrintHistogram(userInputQueue);
-				//printf("\n");
-                //printf("simulating\n");
+
             }
         }
         else{
@@ -98,16 +96,6 @@ int main(void){
 
 	free(command);
 	
-	/* 	
-	BUG HERE!!! refactor the individuals to use some new struct just for the histogram
-	since that is all we're ever modifying
-	*/	
-	// while(QueueEmpty(currentPopulation) == QUEUE_NOT_EMPTY){
-        // RemoveNote(currentPopulation);
-    // }
-    // while(QueueEmpty(workingPopulation) == QUEUE_NOT_EMPTY){
-        // RemoveNote(workingPopulation);
-    // }
     free(currentPopulation);
     free(workingPopulation);
     free(userInputQueue);
